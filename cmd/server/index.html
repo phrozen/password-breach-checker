@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Password Breach Checker</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            width: 100%;
+            margin: 0;
+            background-color: #191919;
+            color: #d3d3d3;
+        }
+        main {
+            margin: 1rem auto;
+            padding: 1rem;
+            border-radius: 10px;
+            background-color: #2b2b2b;
+            max-width: 960px;
+            text-align: center;
+        }
+        #group {
+            margin: 0.25em;
+            display: flex;
+            justify-content: center;
+        }
+        input[type=text], input[type=password], button {
+            border: 0;
+            padding: 0.25em;
+            font-size: 1.25em;
+        }
+        input[type=text], input[type=password] {
+            border-top-left-radius: 10px;
+            border-bottom-left-radius: 10px;
+        }
+        button {
+            border-top-right-radius: 10px;
+            border-bottom-right-radius: 10px;
+        }
+        .ok {
+            color: #3f6;
+        }
+        .warning {
+            color: #f36;
+        }
+    </style>
+    
+</head>
+<body>
+    <main>
+        <h1>Password Breach Checker</h1>
+        <form>
+            <div id="group">
+                <input id="password" name="password" type="password" placeholder="password">
+                <button id="check" type="submit">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M23.111 20.058l-4.977-4.977c.965-1.52 1.523-3.322 1.523-5.251 0-5.42-4.409-9.83-9.829-9.83-5.42 0-9.828 4.41-9.828 9.83s4.408 9.83 9.829 9.83c1.834 0 3.552-.505 5.022-1.383l5.021 5.021c2.144 2.141 5.384-1.096 3.239-3.24zm-20.064-10.228c0-3.739 3.043-6.782 6.782-6.782s6.782 3.042 6.782 6.782-3.043 6.782-6.782 6.782-6.782-3.043-6.782-6.782zm2.01-1.764c1.984-4.599 8.664-4.066 9.922.749-2.534-2.974-6.993-3.294-9.922-.749z"/></svg>
+                </button>
+            </div>
+            <input id="toggle" type="checkbox"> Show Password
+        </form>
+        <p id="result">&nbsp;</p>
+    </main>
+    <script>
+        async function digest(message) {
+            const msgUint8 = new TextEncoder().encode(message);
+            const hashBuffer = await crypto.subtle.digest('SHA-1', msgUint8);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+            return hashHex;
+        }
+
+        async function check(event) {
+            event.preventDefault();
+            const result = document.getElementById('result');
+            result.textContent = '&nbsp;';
+            // Hash current password value with SHA-1
+            const hash = await digest(document.getElementById('password').value);
+            const response = await fetch('/check', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `hash=${hash}`            
+            });
+            const count = await response.text()
+            const msg = `This password has been found in ${Number(count).toLocaleString()} breaches!`;
+            result.className = parseInt(count) === 0 ? 'ok' : 'warning';
+            result.textContent = msg;
+        };
+
+        function togglePassword(event) {
+            const input = document.getElementById('password');
+            const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+            input.setAttribute('type', type);
+        }
+
+        window.onload = function() {
+            document.getElementById('check').addEventListener('click', check);
+            document.getElementById('toggle').addEventListener('click', togglePassword);
+        };
+    </script>
+</body>
+</html>
