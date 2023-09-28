@@ -9,13 +9,15 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
+const DATABASE_PATH = "../../data/pwned-passwords-sha1-ordered-by-hash-v8.bin"
+
 type DatabaseTestSuite struct {
 	suite.Suite
 	db *DB
 }
 
 func (ts *DatabaseTestSuite) SetupSuite() {
-	db, err := New("../../data/pwned-passwords-sha1-ordered-by-hash-v8.bin")
+	db, err := New(DATABASE_PATH)
 	ts.Equal(err, nil)
 	ts.db = db
 }
@@ -75,7 +77,7 @@ func TestDatabaseSuite(t *testing.T) {
 }
 
 func BenchmarkSearch(b *testing.B) {
-	db, err := New("../../data/pwned-passwords-sha1-ordered-by-hash-v8.bin")
+	db, err := New(DATABASE_PATH)
 	if err != nil {
 		panic(err)
 	}
@@ -89,7 +91,7 @@ func BenchmarkSearch(b *testing.B) {
 }
 
 func BenchmarkSearchRandom(b *testing.B) {
-	db, err := New("../../data/pwned-passwords-sha1-ordered-by-hash-v8.bin")
+	db, err := New(DATABASE_PATH)
 	if err != nil {
 		panic(err)
 	}
@@ -105,7 +107,7 @@ func BenchmarkSearchRandom(b *testing.B) {
 }
 
 func BenchmarkSearchCompare(b *testing.B) {
-	db, err := New("../../data/pwned-passwords-sha1-ordered-by-hash-v8.bin")
+	db, err := New(DATABASE_PATH)
 	if err != nil {
 		panic(err)
 	}
